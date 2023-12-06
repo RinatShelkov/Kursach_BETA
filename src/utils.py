@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import re
 from os import PathLike
 from typing import Any
@@ -8,7 +9,7 @@ import numpy as np
 import pandas as pd
 import requests
 
-from data.config import OPERATIONS_XLS
+from data.config import OPERATIONS_XLS, LOG_VIEWS_PATH, LOG_UTILS_PATH
 
 
 def reading_csv_xlsx_file(path: PathLike) -> Any:
@@ -28,6 +29,7 @@ def reading_csv_xlsx_file(path: PathLike) -> Any:
         results = pd.read_excel(path)
 
     else:
+        logging_utils().error("Неверное расширение файла, задан неправильный путь")
         return "Неверное расширение файла, задан неправильный путь"
 
     results = pd.DataFrame(results).replace({np.nan: None})
@@ -49,11 +51,11 @@ def get_list_dict_json(path_json: PathLike) -> Any:
             # logger_utils.info("Файл JSON-файла успешно загружен")
 
     except FileNotFoundError:
-        # logger_utils.error("Файл JSON не найден")
+        logging_utils().error("Файл JSON не найден")
         file_json = []
 
     except json.JSONDecodeError:
-        # logger_utils.error("Файл не содержит JSON формат")
+        logging_utils().error("Файл не содержит JSON формат")
         file_json = []
 
     return file_json
@@ -82,34 +84,36 @@ def get_information_on_card(str_datetime: str) -> Any:
     - Кэшбэк (1 рубль на каждые 100 рублей)
     :param str_datetime
     :return expenses_list_dict"""
+    date_obj = None
     date_obj = datetime.datetime.strptime(str_datetime, "%Y-%m-%d %H:%M:%S")
-    file_xls = reading_csv_xlsx_file(OPERATIONS_XLS)
-    df = pd.DataFrame(file_xls)
+    if date_obj is not None:
+        file_xls = reading_csv_xlsx_file(OPERATIONS_XLS)
+        df = pd.DataFrame(file_xls)
 
-    start_date = date_obj.date().replace(day=1)
-    end_date = date_obj.date()
+        start_date = date_obj.date().replace(day=1)
+        end_date = date_obj.date()
 
-    df["Сумма платежа"] = df["Сумма платежа"].apply(lambda x: x if x < 0 else 0)
-    df["Дата операции"] = df["Дата операции"].apply(
-        lambda x: datetime.datetime.strptime(x, "%d.%m.%Y %H:%M:%S")
-    )
+        df["Сумма платежа"] = df["Сумма платежа"].apply(lambda x: x if x < 0 else 0)
+        df["Дата операции"] = df["Дата операции"].apply(lambda x: datetime.datetime.strptime(x, "%d.%m.%Y %H:%M:%S"))
 
-    df.rename(columns={"Дата операции": "date"}, inplace=True)
-    df = df.loc[
-        (df.date >= np.datetime64(start_date)) & (df.date <= np.datetime64(end_date))
-    ]
+        df.rename(columns={"Дата операции": "date"}, inplace=True)
+        df = df.loc[(df.date >= np.datetime64(start_date)) & (df.date <= np.datetime64(end_date))]
 
-    expenses = df.groupby("Номер карты")["Сумма платежа"].sum().reset_index()
-    expenses.rename(
-        columns={"Номер карты": "last_digits", "Сумма платежа": "total_spent"},
-        inplace=True,
-    )
-    expenses = expenses.assign(cashback=round(expenses.total_spent * 0.01, 2))
-    expenses.update(expenses.select_dtypes(include=[np.number]).abs())
-    expenses_list_dict = expenses.to_dict(orient="records")
-    for expense in expenses_list_dict:
-        expense["total_spent"] = round(expense.get("total_spent"), 2)
-    return expenses_list_dict
+        expenses = df.groupby("Номер карты")["Сумма платежа"].sum().reset_index()
+        expenses.rename(
+            columns={"Номер карты": "last_digits", "Сумма платежа": "total_spent"},
+            inplace=True,
+        )
+        expenses = expenses.assign(cashback=round(expenses.total_spent * 0.01, 2))
+        expenses.update(expenses.select_dtypes(include=[np.number]).abs())
+        expenses_list_dict = expenses.to_dict(orient="records")
+        for expense in expenses_list_dict:
+            expense["total_spent"] = round(expense.get("total_spent"), 2)
+        return expenses_list_dict
+    else:
+        logging_utils().error("Формат str_datetime неккоректен")
+
+        return "Формат строки неккоректен"
 
 
 def get_top5_transactions(str_datetime: str) -> Any:
@@ -118,41 +122,41 @@ def get_top5_transactions(str_datetime: str) -> Any:
     топ 5 транзакций по каждой карте
     :param str_datetime
     :return top_5_list_dict"""
+    date_obj = None
     date_obj = datetime.datetime.strptime(str_datetime, "%Y-%m-%d %H:%M:%S")
-    file_xls = reading_csv_xlsx_file(OPERATIONS_XLS)
-    df = pd.DataFrame(file_xls)
+    if date_obj is not None:
+        file_xls = reading_csv_xlsx_file(OPERATIONS_XLS)
+        df = pd.DataFrame(file_xls)
 
-    start_date = date_obj.date().replace(day=1)
-    end_date = date_obj.date()
+        start_date = date_obj.date().replace(day=1)
+        end_date = date_obj.date()
 
-    df["Дата операции"] = df["Дата операции"].apply(
-        lambda x: datetime.datetime.strptime(x, "%d.%m.%Y %H:%M:%S")
-    )
+        df["Дата операции"] = df["Дата операции"].apply(lambda x: datetime.datetime.strptime(x, "%d.%m.%Y %H:%M:%S"))
 
-    df.rename(columns={"Дата операции": "date"}, inplace=True)
-    df = df.loc[
-        (df.date >= np.datetime64(start_date)) & (df.date <= np.datetime64(end_date))
-    ]
+        df.rename(columns={"Дата операции": "date"}, inplace=True)
+        df = df.loc[(df.date >= np.datetime64(start_date)) & (df.date <= np.datetime64(end_date))]
 
-    cards = df.groupby("Номер карты")
-    top_5 = cards.apply(
-        lambda x: x.sort_values("Сумма платежа", ascending=False).head(5)
-    )
-    top_5.rename(
-        columns={
-            "Сумма платежа": "amount",
-            "Категория": "category",
-            "Описание": "description",
-            "Дата операции": "date",
-        },
-        inplace=True,
-    )
-    top_5 = top_5.iloc[:, [0, 6, 9, 11]]
+        cards = df.groupby("Номер карты")
+        top_5 = cards.apply(lambda x: x.sort_values("Сумма платежа", ascending=False).head(5))
+        top_5.rename(
+            columns={
+                "Сумма платежа": "amount",
+                "Категория": "category",
+                "Описание": "description",
+                "Дата операции": "date",
+            },
+            inplace=True,
+        )
+        top_5 = top_5.iloc[:, [0, 6, 9, 11]]
 
-    top_5_list_dict = top_5.to_dict(orient="records")
-    for top_5 in top_5_list_dict:
-        top_5["date"] = str(top_5.get("date"))
-    return top_5_list_dict
+        top_5_list_dict = top_5.to_dict(orient="records")
+        for top_5 in top_5_list_dict:
+            top_5["date"] = str(top_5.get("date"))
+        return top_5_list_dict
+    else:
+        logging_utils().error("Формат str_datetime неккоректен")
+
+        return "Формат строки неккоректен"
 
 
 def get_user_stocks(user_stocks: list) -> list[dict]:
@@ -175,6 +179,8 @@ def get_user_stocks(user_stocks: list) -> list[dict]:
                 }
             )
         except requests.exceptions.HTTPError as err:
+            logging_utils().error(f"Ошибка запроса requests.get -> {err}")
+
             raise SystemExit(err)
 
     return data_user_stocks
@@ -201,5 +207,30 @@ def get_user_currencies(user_currencies: list) -> list[dict]:
                 }
             )
         except requests.exceptions.HTTPError as err:
+            logging_utils().error(f"Ошибка запроса requests.get -> {err}")
             raise SystemExit(err)
     return data_user_currencies
+
+
+def logging_utils() -> Any:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s \n",
+        filename=LOG_UTILS_PATH,
+        filemode="a",
+        encoding="utf-8",
+    )
+
+    return logging.getLogger()
+
+
+def logging_views() -> Any:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s \n",
+        filename=LOG_VIEWS_PATH,
+        filemode="a",
+        encoding="utf-8",
+    )
+
+    return logging.getLogger()
