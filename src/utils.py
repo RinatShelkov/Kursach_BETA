@@ -84,9 +84,9 @@ def get_information_on_card(str_datetime: str) -> Any:
     - Кэшбэк (1 рубль на каждые 100 рублей)
     :param str_datetime
     :return expenses_list_dict"""
-    date_obj = None
-    date_obj = datetime.datetime.strptime(str_datetime, "%Y-%m-%d %H:%M:%S")
-    if date_obj is not None:
+
+    try:
+        date_obj = datetime.datetime.strptime(str_datetime, "%Y-%m-%d %H:%M:%S")
         file_xls = reading_csv_xlsx_file(OPERATIONS_XLS)
         df = pd.DataFrame(file_xls)
 
@@ -110,10 +110,10 @@ def get_information_on_card(str_datetime: str) -> Any:
         for expense in expenses_list_dict:
             expense["total_spent"] = round(expense.get("total_spent"), 2)
         return expenses_list_dict
-    else:
-        logging_utils().error("Формат str_datetime неккоректен")
+    except ValueError:
 
-        return "Формат строки неккоректен"
+        logging_utils().error("Формат str_datetime неккоректен")
+        raise ValueError("Формат строки неккоректен")
 
 
 def get_top5_transactions(str_datetime: str) -> Any:
@@ -122,9 +122,9 @@ def get_top5_transactions(str_datetime: str) -> Any:
     топ 5 транзакций по каждой карте
     :param str_datetime
     :return top_5_list_dict"""
-    date_obj = None
-    date_obj = datetime.datetime.strptime(str_datetime, "%Y-%m-%d %H:%M:%S")
-    if date_obj is not None:
+
+    try:
+        date_obj = datetime.datetime.strptime(str_datetime, "%Y-%m-%d %H:%M:%S")
         file_xls = reading_csv_xlsx_file(OPERATIONS_XLS)
         df = pd.DataFrame(file_xls)
 
@@ -153,10 +153,11 @@ def get_top5_transactions(str_datetime: str) -> Any:
         for top_5 in top_5_list_dict:
             top_5["date"] = str(top_5.get("date"))
         return top_5_list_dict
-    else:
-        logging_utils().error("Формат str_datetime неккоректен")
 
-        return "Формат строки неккоректен"
+    except ValueError:
+
+        logging_utils().error("Формат str_datetime неккоректен")
+        raise ValueError("Формат строки неккоректен")
 
 
 def get_user_stocks(user_stocks: list) -> list[dict]:
@@ -215,7 +216,7 @@ def get_user_currencies(user_currencies: list) -> list[dict]:
 def logging_utils() -> Any:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s \n",
+        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s -%(funcName)s -%(lineno)d\n",
         filename=LOG_UTILS_PATH,
         filemode="a",
         encoding="utf-8",
@@ -227,7 +228,7 @@ def logging_utils() -> Any:
 def logging_views() -> Any:
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s \n",
+        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s -%(funcName)s -%(lineno)d\n",
         filename=LOG_VIEWS_PATH,
         filemode="a",
         encoding="utf-8",
