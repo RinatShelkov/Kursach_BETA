@@ -1,5 +1,4 @@
 import json
-import pprint
 from typing import Any
 
 import pandas as pd
@@ -10,7 +9,7 @@ from src.utils import reading_csv_xlsx_file
 
 def simple_search(str_description_category: str) -> Any:
     """Пользователь передает строку для поиска , возвращается json-ответ со всеми транзакциями,
-    содержащими запрос в описании или категории
+    содержащими запрос в описании или категории, если строка не найдена - вернется пустой список
     :param str_description_category
     :return json_data"""
     file_operation = reading_csv_xlsx_file(OPERATIONS_XLS)

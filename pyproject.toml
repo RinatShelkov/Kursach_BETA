@@ -41,5 +41,4 @@ line-length = 119
 [tool.isort]
 line_length = 119
 
-[tool.flake8]
-max-line-length = 99
+
