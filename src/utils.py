@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import requests
 
-from data.config import OPERATIONS_XLS, LOG_VIEWS_PATH, LOG_UTILS_PATH
+from data.config import LOG_SERVICES_PATH, LOG_UTILS_PATH, LOG_VIEWS_PATH, OPERATIONS_XLS
 
 
 def reading_csv_xlsx_file(path: PathLike) -> Any:
@@ -111,7 +111,6 @@ def get_information_on_card(str_datetime: str) -> Any:
             expense["total_spent"] = round(expense.get("total_spent"), 2)
         return expenses_list_dict
     except ValueError:
-
         logging_utils().error("Формат str_datetime неккоректен")
         raise ValueError("Формат строки неккоректен")
 
@@ -155,7 +154,6 @@ def get_top5_transactions(str_datetime: str) -> Any:
         return top_5_list_dict
 
     except ValueError:
-
         logging_utils().error("Формат str_datetime неккоректен")
         raise ValueError("Формат строки неккоректен")
 
@@ -235,6 +233,7 @@ def logging_views() -> Any:
     )
 
     return logging.getLogger()
+
 
 def logging_services() -> Any:
     logging.basicConfig(

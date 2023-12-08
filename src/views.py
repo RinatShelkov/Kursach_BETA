@@ -1,16 +1,10 @@
+import json
 import pprint
 from typing import Any
 
 from data.config import USER_SETTINGS_JSON
-from src.utils import (
-    get_greeting,
-    get_information_on_card,
-    get_top5_transactions,
-    get_user_stocks,
-    get_user_currencies,
-)
-from src.utils import get_list_dict_json
-import json
+from src.utils import (get_greeting, get_information_on_card, get_list_dict_json, get_top5_transactions,
+                       get_user_currencies, get_user_stocks)
 
 
 def get_json_data(str_datetime: str) -> Any:

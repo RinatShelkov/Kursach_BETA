@@ -8,7 +8,7 @@ USER_SETTINGS_JSON = ROOT_PATH.joinpath("data").joinpath("user_settings.json")
 LOG_PATH = ROOT_PATH.joinpath("log")
 LOG_VIEWS_PATH = ROOT_PATH.joinpath("log").joinpath("views.log")
 LOG_UTILS_PATH = ROOT_PATH.joinpath("log").joinpath("utils.log")
-LOG_VIEWS_PATH = ROOT_PATH.joinpath("log").joinpath("services.log")
+LOG_SERVICES_PATH = ROOT_PATH.joinpath("log").joinpath("services.log")
 
 
 TEST_TRANSACTION_PATH_CSV = ROOT_PATH.joinpath("data").joinpath("test_transactions.csv")
