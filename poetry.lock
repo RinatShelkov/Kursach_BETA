@@ -695,6 +695,16 @@ files = [
 ]
 
 [[package]]
+name = "stubs"
+version = "1.0.0"
+description = "Tools for setting up stubs and mocks."
+optional = false
+python-versions = "*"
+files = [
+    {file = "stubs-1.0.0-py3-none-any.whl", hash = "sha256:f328a0f99880b0684db69288dcb104fa93d942df298ddd1659edaa7521415da8"},
+]
+
+[[package]]
 name = "types-pytz"
 version = "2023.3.1.1"
 description = "Typing stubs for pytz"
@@ -776,4 +786,4 @@ test = ["pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "df520453e35c1d5f5f587645cd005953be363f75cf489bc2e36e664b7b717666"
+content-hash = "05641816909e52429cd30e4ab2778fd5cd09cfcf69218aabd707506f652c4d85"

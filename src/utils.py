@@ -235,3 +235,14 @@ def logging_views() -> Any:
     )
 
     return logging.getLogger()
+
+def logging_services() -> Any:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s -%(funcName)s -%(lineno)d\n",
+        filename=LOG_SERVICES_PATH,
+        filemode="a",
+        encoding="utf-8",
+    )
+
+    return logging.getLogger()
