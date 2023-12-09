@@ -1,11 +1,12 @@
 import datetime
 import pprint
-from typing import Optional
 from os import PathLike
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 
-from data.config import OPERATIONS_XLS
+from data.config import TEST_OPERATIONS_XLS
 from src.utils import reading_csv_xlsx_file
 
 
@@ -46,4 +47,4 @@ def spending_by_category(transactions: PathLike, category: str, date: Optional[s
     return result
 
 
-pprint.pprint(spending_by_category(OPERATIONS_XLS, "Супермаркеты", "2021-12-30 06:11:12"))
+pprint.pprint(spending_by_category(TEST_OPERATIONS_XLS, "Супермаркеты", "2021-12-30 06:11:12"))
